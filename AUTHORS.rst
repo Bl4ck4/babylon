@@ -2,4 +2,5 @@
 Contributors
 ============
 
-* PhoeniX <liari.tp@gmail.com>
+* Tobias Persson <liari.tp@gmail.com>
+* Annika Hansson <>
