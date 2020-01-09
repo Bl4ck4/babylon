@@ -158,7 +158,7 @@ def init_db():
 
     __add_and_commit(db_session, receptet, *list(ingredients.values()))
 
-    user = User("steve@internet.com", "mittpasswurd", True)
+    user = User("steve","steve@internet.com", "mittpasswurd", True)
     __add_and_commit(db_session, user)
 
     db_session.commit()

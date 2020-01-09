@@ -59,6 +59,7 @@ class Status(MethodView):
             "status": "success",
             "data": {
                 "user_id": user.id,
+                "username": user.username,
                 "email": user.email,
                 "admin": user.admin,
                 "registered_on": user.registered_on
@@ -72,6 +73,8 @@ class RegisterAPI(MethodView):
         if not request.is_json:
             return jsonify({"msg": "Missing JSON in request."}), 400
         post_data = request.get_json()
+        if post_data.get("username") is None:
+            return jsonify({"msg": "Missing 'username' in JSON"}), 400
         if post_data.get("email") is None:
             return jsonify({"msg": "Missing 'email' in JSON."}), 400
         if post_data.get("password") is None:
@@ -86,23 +89,31 @@ class RegisterAPI(MethodView):
         )
 
         try:
+            username = post_data.get("username")
             email = post_data.get("email")
             password = post_data.get("password")
             policy_check = password_policy.test(password)
-            if "@" not in email or len(email.split("@")) > 1:
+            if "@" not in email or len(email.split("@")) != 2:
                 status_code = 400
                 response_object = {
                     "status": "failure",
                     "message": "Email is not valid"
                 }
-            elif policy_check != [] and len(password) <= 16:
+            elif len(password) > 255:
+                status_code = 400
+                response_object =  {
+                    "status": "failure",
+                    "message": "Password is too long."
+                }
+
+            elif policy_check != []:
                 status_code = 400
                 response_object =  {
                     "status": "failure",
                     "message": "Does not follow the password policy"
                 }
             else:
-                user_to_add = User(email, password, False)
+                user_to_add = User(username, email, password, False)
                 db_session.add(user_to_add)
                 db_session.commit()
                 status_code = 200
