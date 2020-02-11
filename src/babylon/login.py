@@ -10,16 +10,26 @@ from .database import db_session
 from password_strength import PasswordPolicy
 
 
+def response(success, message=None, data=None):
+    success = "success" if success else "failure"
+    response_object = {
+        "status": success,
+        "data": data,
+        "message": message
+    }
+    return jsonify(response_object)
+
+
 class LoginAPI(MethodView):
 
     def post(self):
         if not request.is_json:
-            return jsonify({"msg": "Missing JSON in request."}), 400
+            return response(False, message="Missing JSON in request."), 400
         post_data = request.get_json()
         if post_data.get("email") is None:
-            return jsonify({"msg": "Missing 'email' in JSON."}), 400
+            return response(False, message="Missing 'email' in JSON."), 400
         if post_data.get("password") is None:
-            return jsonify({"msg": "Missing 'password' in JSON."}), 400
+            return response(False, message="Missing 'password' in JSON"), 400
 
         try:
             user = User.query.filter_by(
@@ -29,24 +39,13 @@ class LoginAPI(MethodView):
                                        user.password):
                 access_token = create_access_token(identity=user.email, expires_delta=timedelta(days=0, seconds=60))
                 refresh_token = create_refresh_token(identity=user.email)
-                response_object = {
-                    "access_token": access_token,
-                    "refresh_token": refresh_token
-                }
-                return make_response(jsonify(response_object)), 200
+                response_object = response(True, data={"access_token": access_token, "refresh_token": refresh_token})
+                return response_object, 200
             else:
-                response_object = {
-                    "status": "failed",
-                    "message": "Email or password incorrect."
-                }
-                return make_response(jsonify(response_object)), 400
+                return response(False, message="Email or password incorrect"), 400
         except Exception as exception:
             # TODO: Log this event in server logs.
-            response_object = {
-                "status": "failed",
-                "message": "Try again."
-            }
-            return make_response(jsonify(response_object)), 500
+            return response(False, message="Try again."), 500
 
 
 class Status(MethodView):
@@ -55,30 +54,28 @@ class Status(MethodView):
     def get(self):
         current_user = get_jwt_identity()
         user = User.query.filter_by(email=current_user).first()
-        response_object = {
-            "status": "success",
-            "data": {
-                "user_id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "admin": user.admin,
-                "registered_on": user.registered_on
-            }
+        data = {
+            "user_id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "admin": user.admin,
+            "registered_on": user.registered_on
         }
-        return jsonify(response_object), 200
+        return response(True, data=data), 200
+
 
 class RegisterAPI(MethodView):
 
     def post(self):
         if not request.is_json:
-            return jsonify({"msg": "Missing JSON in request."}), 400
+            return response(False, message="Missing JSON in request."), 400
         post_data = request.get_json()
         if post_data.get("username") is None:
-            return jsonify({"msg": "Missing 'username' in JSON"}), 400
+            return response(False, message="Missing 'username' in JSON."), 400
         if post_data.get("email") is None:
-            return jsonify({"msg": "Missing 'email' in JSON."}), 400
+            return response(False, message="Missing 'email' in JSON."), 400
         if post_data.get("password") is None:
-            return jsonify({"msg": "Missing 'password' in JSON."}), 400
+            return response(False, message="Missing 'password' in JSON."), 400
 
         password_policy = PasswordPolicy.from_names(
             length=8,
@@ -94,36 +91,17 @@ class RegisterAPI(MethodView):
             password = post_data.get("password")
             policy_check = password_policy.test(password)
             if "@" not in email or len(email.split("@")) != 2:
-                status_code = 400
-                response_object = {
-                    "status": "failure",
-                    "message": "Email is not valid"
-                }
+                return response(False, message="Email is not valid."), 400
             elif len(password) > 255:
-                status_code = 400
-                response_object =  {
-                    "status": "failure",
-                    "message": "Password is too long."
-                }
+                return response(False, message="Password is too long."), 400
 
             elif policy_check != []:
-                status_code = 400
-                response_object =  {
-                    "status": "failure",
-                    "message": "Does not follow the password policy"
-                }
+                return response(False, message="Password does not follow the password policy."), 400
             else:
                 user_to_add = User(username, email, password, False)
                 db_session.add(user_to_add)
                 db_session.commit()
-                status_code = 200
-                response_object =  {"status": "success", "data": {}}
+                return response(True, data={}), 200
         except Exception as exception:
             print(exception)
-            response_object =  {
-                "status": "failure",
-                "message": "Unable to add user"}
-            status_code = 500
-
-        return jsonify(response_object), status_code
-
+            return response(False, message="Unable to add user."), 500
