@@ -3,6 +3,7 @@ from .measured_in import ModelMeasuredIn
 from .recipe import ModelRecipe, IngredientAssociation
 from .tag import ModelTag
 from .auth import User
+from .fridge import ModelFridge
 from sqlalchemy import exists
 
 
@@ -10,7 +11,7 @@ def __init_korvgratang(db_session):
     liter = db_session.query(ModelMeasuredIn).filter(ModelMeasuredIn.measurement=="l").first()
     kilo = db_session.query(ModelMeasuredIn).filter(ModelMeasuredIn.measurement == "kg").first()
     dinner = db_session.query(ModelTag).filter(ModelTag.name == "dinner").first()
-    ingredients = __add_ingredients(db_session, ("broccoli", 0.500, kilo),
+    ingredients, _ = __add_ingredients(db_session, ("broccoli", 0.500, kilo),
                                     ("falusausage", 0.800, kilo),
                                     ("grated_cheese", 0.125, kilo),
                                     ("flour", 0.015, liter),
@@ -48,7 +49,7 @@ def __init_fiskfile(db_session):
 
     dinner = db_session.query(ModelTag).filter(ModelTag.name == "dinner").first()
 
-    ingredients = __add_ingredients(
+    ingredients, _ = __add_ingredients(
         db_session,
         ("oil", 0.015, liter),
         ("white_fish", 1, kilo),
@@ -101,7 +102,7 @@ def __add_ingredients(db_session, *ingredients):
         name, amount, measured_in = ingredient
         (ret, ), = db_session.query(exists().where(ModelIngredient.name==name))
         if not ret:
-            ingredient = __add_and_commit(db_session, *__create(ModelIngredient, (name,)))[0]
+            ingredient = __add_and_commit(db_session, *__create(ModelIngredient, (name, measured_in)))[0]
         else:
             ingredient = db_session.query(ModelIngredient).filter(ModelIngredient.name == name).first()
         created_ingredients.append((ingredient, name, amount, measured_in))
@@ -109,9 +110,9 @@ def __add_ingredients(db_session, *ingredients):
     for ingredient, name, amount, measured_in in created_ingredients:
         assoc = IngredientAssociation(amount=amount)
         assoc.ingredient = ingredient
-        assoc.measured_in = measured_in
         ingredient_dict[name] = assoc
-    return ingredient_dict
+    created_ingredients = {name: ingredient for (ingredient, name, amount, measured_in) in created_ingredients}
+    return ingredient_dict, created_ingredients
 
 
 def __add_tags(db_session, *tags):
@@ -138,8 +139,11 @@ def init_db():
     __init_korvgratang(db_session)
     __init_fiskfile(db_session)
 
-    ingredients = __add_ingredients(db_session, ("tomato", 1, kilo), ("beef", 5, kilo), ("milk", 20, liter))
+    ingredients_association, ingredients = __add_ingredients(db_session, ("tomato", 1, kilo), ("beef", 5, kilo), ("milk", 20, liter))
 
+    tomat_assoc = ingredients_association.get("tomato")
+    biff_assoc = ingredients_association.get("beef")
+    molk_assoc = ingredients_association.get("milk")
     tomat = ingredients.get("tomato")
     biff = ingredients.get("beef")
     molk = ingredients.get("milk")
@@ -151,12 +155,18 @@ def init_db():
         "Receptias",
         1
     )
-    receptet.ingredients.append(tomat)
-    receptet.ingredients.append(biff)
-    receptet.ingredients.append(molk)
+    receptet.ingredients.append(tomat_assoc)
+    receptet.ingredients.append(biff_assoc)
+    receptet.ingredients.append(molk_assoc)
     receptet.tags.append(boss)
+    __add_and_commit(db_session, receptet, *list(ingredients_association.values()))
 
-    __add_and_commit(db_session, receptet, *list(ingredients.values()))
+    frysen = ModelFridge()
+    frysen.ingredients.append(tomat)
+    frysen.ingredients.append(biff)
+    frysen.ingredients.append(molk)
+    __add_and_commit(db_session, frysen)
+
 
     user = User("steve","steve@internet.com", "mittpasswurd", True)
     __add_and_commit(db_session, user)

@@ -16,10 +16,15 @@ class IngredientAttributes:
 class Ingredient(SQLAlchemyObjectType, IngredientAttributes):
 
     recipes = graphene.List(lambda: import_module('.recipe', "babylon.schemas").Recipe)
+    fridges = graphene.List(lambda: import_module('.fridge', "babylon.schemas").Fridge)
 
     @graphene.resolve_only_args
     def resolve_recipes(self):
         return [recipe.recipe for recipe in self.recipes]
+
+    @graphene.resolve_only_args
+    def resolve_fridges(self):
+        return [fridge for fridge in self.fridge]
 
     @graphene.resolve_only_args
     def resolve_amount(self):
@@ -33,7 +38,7 @@ class Ingredient(SQLAlchemyObjectType, IngredientAttributes):
         return db_session.query(IngredientAssociation) \
             .filter(IngredientAssociation.ingredient_id==self.id) \
             .first() \
-            .measured_in.measurement
+            .ingredient.measured_in.measurement
 
     class Meta:
         model = ModelIngredient

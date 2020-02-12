@@ -1,6 +1,5 @@
 import datetime
 import bcrypt
-import jwt
 from sqlalchemy import Column, Integer, String, DateTime, Boolean
 from ..database import Base
 

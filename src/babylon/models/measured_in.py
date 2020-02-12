@@ -1,7 +1,6 @@
 from sqlalchemy import Column, String, Integer
 from sqlalchemy.orm import relationship
 from ..database import Base
-from .ingredient import ModelIngredient
 
 
 class ModelMeasuredIn(Base):
@@ -9,8 +8,7 @@ class ModelMeasuredIn(Base):
 
     id = Column('id', Integer, primary_key=True)
     measurement = Column('measurement', String, unique=True)
-
-    # ingredientList = relationship(ModelIngredient, backref='measuredIn')
+    ingredients = relationship("ModelIngredient", back_populates="measured_in")
 
     def __init__(self, measurement):
         self.measurement = measurement
