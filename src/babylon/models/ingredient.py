@@ -11,10 +11,5 @@ class ModelIngredient(Base):
     name = Column('name', String, unique=True)
     recipes = relationship("IngredientAssociation", back_populates="ingredient")
 
-    # amount = Column('amount', Float)
-    # measured_in_id = Column(Integer, ForeignKey("measured_in.id"))
-
     def __init__(self, name):  # , amount):  # , measured_in_id):
         self.name = name
-        # self.amount = amount
-        # self.measured_in_id = measured_in_id

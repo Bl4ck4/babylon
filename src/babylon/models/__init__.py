@@ -3,6 +3,7 @@ from .measured_in import ModelMeasuredIn
 from .recipe import ModelRecipe, IngredientAssociation
 from .tag import ModelTag
 from .auth import User
+from .fridge import ModelFridge
 from sqlalchemy import exists
 
 
@@ -155,8 +156,15 @@ def init_db():
     receptet.ingredients.append(biff)
     receptet.ingredients.append(molk)
     receptet.tags.append(boss)
+    frysen = ModelFridge()
+    frysen.ingredients.append(tomat)
+    frysen.ingredients.append(biff)
+    frysen.ingredients.append(molk)
 
     __add_and_commit(db_session, receptet, *list(ingredients.values()))
+
+
+    __add_and_commit(db_session, frysen)
 
     user = User("steve","steve@internet.com", "mittpasswurd", True)
     __add_and_commit(db_session, user)
