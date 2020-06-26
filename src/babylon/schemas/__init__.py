@@ -5,3 +5,4 @@ except AssertionError:
 from .measured_in import MeasuredIn
 from .ingredient import Ingredient
 from .tag import Tag
+from .fridge import Fridge

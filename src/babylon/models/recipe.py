@@ -7,12 +7,10 @@ class IngredientAssociation(Base):
     __tablename__ = "ingredient_association"
     recipe_id = Column(Integer, ForeignKey('recipe.id'), primary_key=True)
     ingredient_id = Column(Integer, ForeignKey('ingredient.id'), primary_key=True)
-    measured_in_id = Column(Integer, ForeignKey('measured_in.id'))
     amount = Column('amount', Integer)
 
     recipe = relationship("ModelRecipe", back_populates="ingredients")
     ingredient = relationship("ModelIngredient", back_populates="recipes")
-    measured_in = relationship("ModelMeasuredIn", backref="measured_in")
 
 tag_association_table = Table("tag_association", Base.metadata,
                           Column('recipe_id', Integer, ForeignKey('recipe.id')),

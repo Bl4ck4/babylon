@@ -1,6 +1,6 @@
 from graphene_sqlalchemy import SQLAlchemyConnectionField
 import graphene
-from . import Recipe, Ingredient, Tag, MeasuredIn
+from . import Recipe, Ingredient, Tag, MeasuredIn, Fridge
 
 class Query(graphene.ObjectType):
     """Query objects for GraphQL API."""
@@ -14,3 +14,5 @@ class Query(graphene.ObjectType):
     tagList = SQLAlchemyConnectionField(Tag)
     measuredIn = graphene.relay.Node.Field(MeasuredIn)
     measuredInList = SQLAlchemyConnectionField(MeasuredIn)
+    fridge = graphene.relay.Node.Field(Fridge)
+    fridgeList = SQLAlchemyConnectionField(Fridge)

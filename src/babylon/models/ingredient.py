@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from ..database import Base
@@ -10,11 +10,9 @@ class ModelIngredient(Base):
     id = Column('id', Integer, primary_key=True)
     name = Column('name', String, unique=True)
     recipes = relationship("IngredientAssociation", back_populates="ingredient")
+    measured_in_id = Column(Integer, ForeignKey("measured_in.id"))
+    measured_in = relationship("ModelMeasuredIn", back_populates="ingredients")
 
-    # amount = Column('amount', Float)
-    # measured_in_id = Column(Integer, ForeignKey("measured_in.id"))
-
-    def __init__(self, name):  # , amount):  # , measured_in_id):
+    def __init__(self, name, measured_in, *args, **kwargs):
         self.name = name
-        # self.amount = amount
-        # self.measured_in_id = measured_in_id
+        self.measured_in = measured_in
