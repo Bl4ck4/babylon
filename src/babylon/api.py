@@ -10,7 +10,7 @@ from .database import db_session
 from .models.auth import User
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token, get_jwt_identity,
-    create_refresh_token, jwt_refresh_token_required
+    create_refresh_token
 )
 from .login import LoginAPI, Status, RegisterAPI
 
@@ -41,7 +41,7 @@ APP.add_url_rule(
 
 
 @APP.route("/refresh", methods=["POST"])
-@jwt_refresh_token_required
+@jwt_required(refresh=True)
 def refresh():
     current_user = get_jwt_identity()
     response_object = {
