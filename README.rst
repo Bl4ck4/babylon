@@ -7,7 +7,8 @@ Babylon is the API backend for the Mira frontend, designed for fetching recipes.
 Description
 ===========
 
-Herodotus ascribes to her (Semiramis; shorthand Mira) the artificial banks that confined the Euphrates and knows her name as borne by a gate of Babylon
+Herodotus ascribes to her (Semiramis; shorthand Mira) the artificial banks that confined the
+Euphrates and knows her name as born by a gate of Babylon.
 
 Features
 ========
@@ -30,26 +31,26 @@ Support
 Start the API development server
 --------------------------------
 
-Create a virtual environment
+Create a virtual environment:
 
 .. code-block::
 
  virtualenv -p python3 venv
 
-Install all requirements
+Install all requirements:
 
 .. code-block::
 
  pip install -r requirements.txt
 
-Initialize database
+Initialize database:
 
 .. code-block::
 
     cd src
     python -m babylon.app -i
 
-Start the webserver
+Start the webserver:
 
 .. code-block::
 
